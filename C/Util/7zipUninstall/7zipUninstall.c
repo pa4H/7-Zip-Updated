@@ -1,5 +1,6 @@
 /* 7zipUninstall.c - 7-Zip Uninstaller
 : Igor Pavlov : Public domain */
+/* Modified for 7-Zip Updated on 2026-10-28. */
 
 #include "Precomp.h"
 
@@ -31,6 +32,8 @@ typedef enum {
 #include "../../7zVersion.h"
 
 #include "resource.h"
+#include "../../../CPP/7zip/ForkConfig.h"
+#include "../7zipLegacy.h"
 
 
 
@@ -50,7 +53,7 @@ typedef enum {
   #define Z7_64BIT_INSTALLER 1
 #endif
 
-#define k_7zip_with_Ver_base L"7-Zip " LLL(MY_VERSION)
+#define k_7zip_with_Ver_base L"7-Zip Updated " LLL(Z7_FORK_VERSION)
 
 #ifdef Z7_64BIT_INSTALLER
 
@@ -663,6 +666,9 @@ static BOOL RemoveDir(void)
     return TRUE;
   if (RemoveDirectoryW(path))
     return TRUE;
+  /* Preserve directories containing files not owned by the installer. */
+  if (GetLastError() == ERROR_DIR_NOT_EMPTY)
+    return TRUE;
   return RemoveFileAfterReboot();
 }
 
@@ -681,13 +687,10 @@ static BOOL RemoveDir(void)
   #define NUM_EXTRA_FILES_64BIT 0
 #endif
 
-#define NUM_FILES (NUM_LANG_TXT_FILES + 1 + 13 + NUM_EXTRA_FILES_64BIT)
+#define NUM_FILES (NUM_LANG_TXT_FILES + 1 + 19 + NUM_EXTRA_FILES_64BIT)
 
 static const char * const k_Names =
-  "af an ar ast az ba be bg bn br ca co cs cy da de el eo es et eu ext"
-  " fa fi fr fur fy ga gl gu he hi hr hu hy id io is it ja ka kaa kab kk ko ku ku-ckb ky"
-  " lij lt lv mk mn mng mng2 mr ms nb ne nl nn pa-in pl ps pt pt-br ro ru"
-  " sa si sk sl sq sr-spc sr-spl sv sw ta tg th tk tr tt ug uk uz uz-cyrl va vi yo zh-cn zh-tw"
+  Z7_LEGACY_LANGUAGE_NAMES
   " en.ttt"
   " descript.ion"
   " History.txt"
@@ -704,6 +707,12 @@ static const char * const k_Names =
   " 7-zip32.dll"
   #endif
   " 7-zip.dll"
+  " copying.txt"
+  " unRarLicense.txt"
+  " FORK.md"
+  " THIRD_PARTY_NOTICES.txt"
+  " licenses\\CC-BY-NC-SA-3.0.txt"
+  " licenses\\CC-BY-NC-SA-4.0.txt"
   " Uninstall.exe";
 
 
@@ -800,6 +809,8 @@ static int Install(void)
       }
     }
 
+    CpyAscii(path + pathLen, "licenses");
+    RemoveDir();
     CpyAscii(path + pathLen, k_Lang);
     RemoveDir();
 

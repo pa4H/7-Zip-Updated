@@ -1,5 +1,6 @@
 /* 7zipInstall.c - 7-Zip Installer
 : Igor Pavlov : Public domain */
+/* Modified for 7-Zip Updated on 2026-10-28. */
 
 #include "Precomp.h"
 
@@ -38,6 +39,8 @@ typedef enum {
 #include "../../DllSecur.h"
 
 #include "resource.h"
+#include "../../../CPP/7zip/ForkConfig.h"
+#include "../7zipLegacy.h"
 
 #if (defined(__GNUC__) && (__GNUC__ >= 8)) || defined(__clang__)
   // #pragma GCC diagnostic ignored "-Wcast-function-type"
@@ -66,7 +69,7 @@ static LPCWSTR const k_Reg_Software_7zip = L"Software\\7-Zip";
   #define Z7_64BIT_INSTALLER 1
 #endif
 
-#define k_7zip_with_Ver_base L"7-Zip " LLL(MY_VERSION)
+#define k_7zip_with_Ver_base L"7-Zip Updated " LLL(Z7_FORK_VERSION)
 
 #ifdef Z7_64BIT_INSTALLER
 
@@ -622,6 +625,59 @@ static void Set7zipPostfix(WCHAR *s)
     return;
   CatAscii(s, "7-Zip\\");
 }
+
+/* Remove only named upstream translations/help during an in-place upgrade. */
+static WRes RemoveOldFile(const char *relativeName, int *needRebootLevel)
+{
+  WCHAR filePath[MAX_PATH * 2 + 40];
+  DWORD attrib;
+  wcscpy(filePath, path);
+  CatAscii(filePath, relativeName);
+  attrib = GetFileAttributesW(filePath);
+  if (attrib == INVALID_FILE_ATTRIBUTES)
+  {
+    const DWORD error = GetLastError();
+    return error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND ? 0 : error;
+  }
+  if (attrib & FILE_ATTRIBUTE_READONLY)
+    SetFileAttributesW(filePath, attrib & ~(DWORD)FILE_ATTRIBUTE_READONLY);
+  if (DeleteFileW(filePath))
+    return 0;
+  if (!MoveFileExW(filePath, NULL, MOVEFILE_DELAY_UNTIL_REBOOT))
+    return GetLastError();
+  *needRebootLevel |= 4;
+  return 0;
+}
+
+static WRes RemoveOldHelpAndLanguages(int *needRebootLevel)
+{
+  const char *names = Z7_LEGACY_LANGUAGE_NAMES;
+  WRes result = RemoveOldFile("7-zip.chm", needRebootLevel);
+  if (result != 0)
+    return result;
+  result = RemoveOldFile("Lang\\en.ttt", needRebootLevel);
+  if (result != 0)
+    return result;
+  while (*names)
+  {
+    char name[32];
+    unsigned len = 0;
+    char relativeName[48] = "Lang\\";
+    while (*names == ' ')
+      names++;
+    while (*names && *names != ' ')
+      name[len++] = *names++;
+    name[len] = 0;
+    if (len == 0 || strcmp(name, "ru") == 0)
+      continue;
+    memcpy(relativeName + 5, name, len);
+    memcpy(relativeName + 5 + len, ".txt", 5);
+    result = RemoveOldFile(relativeName, needRebootLevel);
+    if (result != 0)
+      return result;
+  }
+  return 0;
+}
     
 
 static int Install(void);
@@ -835,6 +891,8 @@ static void SetShellProgramsGroup(HWND hwndOwner)
         
         if (i == 0)
           DeleteFileW(link);
+        else if (k == 1)
+          DeleteFileW(link); /* The fork does not install user help. */
         else if (CreateShellLink(link, destPath) != S_OK)
           isOK = False;
       }
@@ -944,7 +1002,7 @@ static void WriteShellEx(void)
     if (res == ERROR_SUCCESS)
     {
       MyRegistry_SetString(destKey, L"DisplayName", k_7zip_with_Ver_str);
-      MyRegistry_SetString(destKey, L"DisplayVersion", LLL(MY_VERSION_NUMBERS));
+      MyRegistry_SetString(destKey, L"DisplayVersion", LLL(Z7_FORK_VERSION));
       MyRegistry_SetString(destKey, L"DisplayIcon", destPath);
       MyRegistry_SetString(destKey, L"InstallLocation", path);
 
@@ -961,10 +1019,11 @@ static void WriteShellEx(void)
 
       MyRegistry_SetDWORD(destKey, L"EstimatedSize", g_TotalSize >> 10);
       
-      MyRegistry_SetDWORD(destKey, L"VersionMajor", MY_VER_MAJOR);
-      MyRegistry_SetDWORD(destKey, L"VersionMinor", MY_VER_MINOR);
+      MyRegistry_SetDWORD(destKey, L"VersionMajor", 1);
+      MyRegistry_SetDWORD(destKey, L"VersionMinor", 0);
   
-      MyRegistry_SetString(destKey, L"Publisher", LLL(MY_AUTHOR_NAME));
+      MyRegistry_SetString(destKey, L"Publisher", L"pa4H");
+      MyRegistry_SetString(destKey, L"URLInfoAbout", L"https://github.com/pa4H/7-Zip-Updated");
       
       // MyRegistry_SetString(destKey, L"HelpLink", L"http://www.7-zip.org/support.html");
       // MyRegistry_SetString(destKey, L"URLInfoAbout", L"http://www.7-zip.org/");
@@ -1092,6 +1151,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
   }
 
+  {
+    OSVERSIONINFOEXW required;
+    memset(&required, 0, sizeof(required));
+    required.dwOSVersionInfoSize = sizeof(required);
+    required.dwMajorVersion = 10;
+    if (!VerifyVersionInfoW(&required, VER_MAJORVERSION,
+        VerSetConditionMask(0, VER_MAJORVERSION, VER_GREATER_EQUAL)))
+    {
+      if (!g_SilentMode)
+        PrintErrorMessage("This installation requires Windows 10 or later", NULL);
+      return 1;
+    }
+  }
+
   #if defined(Z7_64BIT_INSTALLER) && !defined(_WIN64)
   {
     BOOL isWow64 = FALSE;
@@ -1131,6 +1204,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
     
     // ok = False;
+    if (!ok)
+      ok = MyRegistry_QueryString2(HKEY_LOCAL_MACHINE, k_Reg_Software_7zip, k_Reg_Path32, path);
     if (!ok)
     {
       /*
@@ -1605,7 +1680,10 @@ if (res == SZ_OK)
 
     path[pathLen] = 0;
 
-    if (i == db.NumFiles)
+    if (i == db.NumFiles && res == SZ_OK && winRes == 0)
+      winRes = RemoveOldHelpAndLanguages(&needRebootLevel);
+
+    if (i == db.NumFiles && res == SZ_OK && winRes == 0)
     {
       SetRegKey_Path();
       WriteCLSID();
