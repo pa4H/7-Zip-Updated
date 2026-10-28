@@ -1,8 +1,9 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 #include "ExtractDialogRes.h"
 #include "../../GuiCommon.rc"
 
 #define xc 336
-#define yc 168
+#define yc 222
 
 #undef g1xs
 #undef g2x
@@ -32,31 +33,34 @@ BEGIN
   COMBOBOX  IDC_EXTRACT_PATH, m, m + 12, xc - bxsDots - 12, 100, MY_COMBO_WITH_EDIT
   PUSHBUTTON  "...", IDB_EXTRACT_SET_PATH, xs - m - bxsDots, m + 12 - 2, bxsDots, bys, WS_GROUP
 
-  CONTROL   "", IDX_EXTRACT_NAME_ENABLE, MY_CHECKBOX, m, m + 34, 12, 10
-  EDITTEXT  IDE_EXTRACT_NAME, m + 12 + 2, m + 32, g1xs - 12 - 2, 14, ES_AUTOHSCROLL
+  PUSHBUTTON "", IDB_EXTRACT_RECENT_1, m, m + 32, xc, 16, BS_LEFT
+  PUSHBUTTON "", IDB_EXTRACT_RECENT_2, m, m + 50, xc, 16, BS_LEFT
+  PUSHBUTTON "", IDB_EXTRACT_RECENT_3, m, m + 68, xc, 16, BS_LEFT
 
-  LTEXT     "Path mode:", IDT_EXTRACT_PATH_MODE, m, m + 52, g1xs, 8
-  COMBOBOX  IDC_EXTRACT_PATH_MODE, m, m + 64, g1xs, 140, MY_COMBO
+  CONTROL   "", IDX_EXTRACT_NAME_ENABLE, MY_CHECKBOX, m, m + 88, 12, 10
+  EDITTEXT  IDE_EXTRACT_NAME, m + 12 + 2, m + 86, g1xs - 12 - 2, 14, ES_AUTOHSCROLL
+
+  LTEXT     "Path mode:", IDT_EXTRACT_PATH_MODE, m, m + 106, g1xs, 8
+  COMBOBOX  IDC_EXTRACT_PATH_MODE, m, m + 118, g1xs, 140, MY_COMBO
 
   CONTROL   "Eliminate duplication of root folder", IDX_EXTRACT_ELIM_DUP, MY_CHECKBOX,
-            m, m + 84, g1xs, 10
+            m, m + 138, g1xs, 10
 
-  LTEXT     "Overwrite mode:", IDT_EXTRACT_OVERWRITE_MODE, m, m + 104, g1xs, 8
-  COMBOBOX  IDC_EXTRACT_OVERWRITE_MODE, m, m + 116, g1xs, 140, MY_COMBO
+  LTEXT     "Overwrite mode:", IDT_EXTRACT_OVERWRITE_MODE, m, m + 158, g1xs, 8
+  COMBOBOX  IDC_EXTRACT_OVERWRITE_MODE, m, m + 170, g1xs, 140, MY_COMBO
 
 
-  GROUPBOX  "Password", IDG_PASSWORD, g2x, m + 36, g2xs, GROUP_Y_SIZE
-  EDITTEXT  IDE_EXTRACT_PASSWORD, g2x2, m + 50, g2xs2, 14, ES_PASSWORD | ES_AUTOHSCROLL
-  CONTROL   "Show Password", IDX_PASSWORD_SHOW, MY_CHECKBOX, g2x2, m + 72, g2xs2, 10
+  GROUPBOX  "Password", IDG_PASSWORD, g2x, m + 90, g2xs, GROUP_Y_SIZE
+  EDITTEXT  IDE_EXTRACT_PASSWORD, g2x2, m + 104, g2xs2, 14, ES_PASSWORD | ES_AUTOHSCROLL
+  CONTROL   "Show Password", IDX_PASSWORD_SHOW, MY_CHECKBOX, g2x2, m + 126, g2xs2, 10
 
 //  CONTROL   "Restore alternate data streams", IDX_EXTRACT_ALT_STREAMS, MY_CHECKBOX,
-//            g2x, m + 104, g2xs, 10
+//            g2x, m + 158, g2xs, 10
   CONTROL   "Restore file security", IDX_EXTRACT_NT_SECUR, MY_CHECKBOX,
-            g2x, m + 104, g2xs, 10
+            g2x, m + 158, g2xs, 10
   
-  DEFPUSHBUTTON  "OK",     IDOK,     bx3, by, bxs, bys, WS_GROUP
-  PUSHBUTTON     "Cancel", IDCANCEL, bx2, by, bxs, bys
-  PUSHBUTTON     "Help",   IDHELP,   bx1, by, bxs, bys
+  DEFPUSHBUTTON  "OK",     IDOK,     bx2, by, bxs, bys, WS_GROUP
+  PUSHBUTTON     "Cancel", IDCANCEL, bx1, by, bxs, bys
 END
 
 

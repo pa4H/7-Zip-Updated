@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // PanelKey.cpp
 
 #include "StdAfx.h"
@@ -46,26 +47,8 @@ bool CPanel::OnKeyDown(LPNMLVKEYDOWN keyDownInfo, LRESULT &result)
   const bool alt = IsKeyDown(VK_MENU);
   const bool ctrl = IsKeyDown(VK_CONTROL);
   // const bool leftCtrl = IsKeyDown(VK_LCONTROL);
-  const bool rightCtrl = IsKeyDown(VK_RCONTROL);
   const bool shift = IsKeyDown(VK_SHIFT);
   result = 0;
-
-  if (keyDownInfo->wVKey >= '0' &&
-      keyDownInfo->wVKey <= '9' &&
-      (rightCtrl || alt))
-  {
-    const unsigned index = (unsigned)(keyDownInfo->wVKey - '0');
-    if (shift)
-    {
-      SetBookmark(index);
-      return true;
-    }
-    else
-    {
-      OpenBookmark(index);
-      return true;
-    }
-  }
 
   if ((keyDownInfo->wVKey == VK_F2 ||
        keyDownInfo->wVKey == VK_F1)
@@ -323,35 +306,12 @@ bool CPanel::OnKeyDown(LPNMLVKEYDOWN keyDownInfo, LRESULT &result)
         return true;
       }
       return false;
-    case 'Z':
-      if (ctrl)
-      {
-        ChangeComment();
-        return true;
-      }
-      return false;
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-      if (ctrl)
-      {
-        const unsigned styleIndex = (unsigned)(keyDownInfo->wVKey - '1');
-        SetListViewMode(styleIndex);
-        return true;
-      }
-      return false;
     case VK_MULTIPLY:
       {
         InvertSelection();
         return true;
       }
-    case VK_F12:
-      if (alt && !ctrl && !shift)
-      {
-        FoldersHistory();
-        return true;
-      }
+
   }
   return false;
 }

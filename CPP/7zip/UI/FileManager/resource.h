@@ -1,5 +1,8 @@
 #include "resourceGui.h"
 
+// Custom Up icon added for the fork on 2026-10-28.
+#define IDI_UP            200
+
 #define IDR_MENUBAR1      70
 #define IDM_MENU          71
 #define IDR_ACCELERATOR1  72

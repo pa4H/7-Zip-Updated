@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // LangPage.cpp
 
 #include "StdAfx.h"
@@ -104,7 +105,7 @@ bool CLangPage::OnInit()
   
   while (enumerator.Next(fi))
   {
-    if (fi.IsDir())
+    if (fi.IsDir() || !fi.Name.IsEqualTo_NoCase(FTEXT("ru.txt")))
       continue;
     const unsigned kExtSize = 4;
     if (fi.Name.Len() < kExtSize)

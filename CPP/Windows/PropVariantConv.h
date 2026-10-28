@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // Windows/PropVariantConv.h
 
 #ifndef ZIP7_INC_PROP_VARIANT_CONV_H
@@ -10,6 +11,9 @@
 extern bool g_Timestamp_Show_UTC;
 
 #define kTimestampPrintLevel_DAY -3
+// Fork date formats, added 2026-10-27.
+#define kTimestampPrintLevel_DMY_DAY -5
+#define kTimestampPrintLevel_DMY_MIN -4
 // #define kTimestampPrintLevel_HOUR -2
 #define kTimestampPrintLevel_MIN -1
 #define kTimestampPrintLevel_SEC  0

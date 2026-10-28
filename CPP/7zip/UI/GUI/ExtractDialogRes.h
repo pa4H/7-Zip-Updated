@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 #define IDD_EXTRACT     3400
 #define IDD_EXTRACT_2  13400
 
@@ -5,6 +6,9 @@
 #define IDB_EXTRACT_SET_PATH         101
 #define IDC_EXTRACT_PATH_MODE        102
 #define IDC_EXTRACT_OVERWRITE_MODE   103
+#define IDB_EXTRACT_RECENT_1         140
+#define IDB_EXTRACT_RECENT_2         141
+#define IDB_EXTRACT_RECENT_3         142
 
 #define IDE_EXTRACT_PASSWORD         120
 

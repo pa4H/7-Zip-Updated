@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // AppState.h
 
 #ifndef ZIP7_INC_APP_STATE_H
@@ -83,12 +84,10 @@ struct CAppState
   void Save()
   {
     FastFolders.Save();
-    FolderHistory.Save();
   }
   void Read()
   {
     FastFolders.Read();
-    FolderHistory.Read();
   }
 };
 

@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 #include "BrowseDialog2Res.h"
 #include "../../GuiCommon.rc"
 // #include "resource.h"
@@ -17,7 +18,6 @@ CAPTION "7-Zip: Browse Temp Files"
 
 // DON'T USE DEFPUSHBUTTON here, because we use IDOK as default action for Enter key.
   PUSHBUTTON  "Close",  IDCLOSE,  bx2, by, bxs, bys, WS_GROUP
-  PUSHBUTTON  "Help",   IDHELP,   bx1, by, bxs, bys
 
   PUSHBUTTON  "Delete",  IDS_BUTTON_DELETE, m , m, 64, bys
   PUSHBUTTON  "Refresh",  IDM_VIEW_REFRESH, m + 64 + 8, m, 64, bys

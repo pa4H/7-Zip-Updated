@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // Windows/Control/PropertyPage.cpp
 
 #include "StdAfx.h"
@@ -90,7 +91,7 @@ INT_PTR MyPropertySheet(const CObjectVector<CPageInfo> &pagesInfo, HWND hwndPare
       my_compatib_PROPSHEETPAGEA page;
       memset(&page, 0, sizeof(page));
       page.dwSize = sizeof(page);
-      page.dwFlags = PSP_HASHELP;
+      page.dwFlags = 0;
       page.hInstance = g_hInstance;
       page.pszTemplate = MAKEINTRESOURCEA(pageInfo.ID);
       // page.pszIcon = NULL;
@@ -111,7 +112,7 @@ INT_PTR MyPropertySheet(const CObjectVector<CPageInfo> &pagesInfo, HWND hwndPare
       my_compatib_PROPSHEETPAGEW page;
       memset(&page, 0, sizeof(page));
       page.dwSize = sizeof(page);
-      page.dwFlags = PSP_HASHELP;
+      page.dwFlags = 0;
       page.hInstance = g_hInstance;
       page.pszTemplate = MAKEINTRESOURCEW(pageInfo.ID);
       // page.pszIcon = NULL;
@@ -134,7 +135,7 @@ INT_PTR MyPropertySheet(const CObjectVector<CPageInfo> &pagesInfo, HWND hwndPare
   {
     PROPSHEETHEADERA sheet;
     sheet.dwSize = sizeof(sheet);
-    sheet.dwFlags = PSH_PROPSHEETPAGE;
+    sheet.dwFlags = PSH_PROPSHEETPAGE | PSH_NOCONTEXTHELP;
     sheet.hwndParent = hwndParent;
     sheet.hInstance = g_hInstance;
     AString titleA (GetSystemString(title));
@@ -150,7 +151,7 @@ INT_PTR MyPropertySheet(const CObjectVector<CPageInfo> &pagesInfo, HWND hwndPare
   {
     PROPSHEETHEADERW sheet;
     sheet.dwSize = sizeof(sheet);
-    sheet.dwFlags = PSH_PROPSHEETPAGE;
+    sheet.dwFlags = PSH_PROPSHEETPAGE | PSH_NOCONTEXTHELP;
     sheet.hwndParent = hwndParent;
     sheet.hInstance = g_hInstance;
     sheet.pszCaption = title;

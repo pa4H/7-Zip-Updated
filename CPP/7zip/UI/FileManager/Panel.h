@@ -1,3 +1,5 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
+// Custom Up icon added on 2026-10-28.
 // Panel.h
 
 #ifndef ZIP7_INC_PANEL_H
@@ -26,6 +28,7 @@
 
 #include "../../../Windows/Control/ComboBox.h"
 #include "../../../Windows/Control/Edit.h"
+#include "../../../Windows/Control/ImageList.h"
 #include "../../../Windows/Control/ListView.h"
 #include "../../../Windows/Control/ReBar.h"
 #include "../../../Windows/Control/Static.h"
@@ -373,6 +376,10 @@ private:
   int _prevFocusedItem;
 
   CAppState *_appState;
+  UStringVector _navigationPaths;
+  unsigned _navigationPosition;
+  bool _navigatingHistory;
+  void RememberNavigationPath();
 
   virtual bool OnCommand(unsigned code, unsigned itemID, LPARAM lParam, LRESULT &result) Z7_override;
   virtual LRESULT OnMessage(UINT message, WPARAM wParam, LPARAM lParam) Z7_override;
@@ -430,6 +437,7 @@ public:
 
   NWindows::NControl::CReBar _headerReBar;
   NWindows::NControl::CToolBar _headerToolBar;
+  NWindows::NControl::CImageList _headerImageList;
   NWindows::NControl::
     #ifdef UNDER_CE
     CComboBox
@@ -572,6 +580,7 @@ public:
   void LoadFullPath();
   void LoadFullPathAndShow();
   void FoldersHistory();
+  void NavigateHistory(bool forward);
   void OpenParentFolder();
   void CloseOneLevel();
   void CloseOpenFolders();
@@ -616,10 +625,12 @@ public:
       // _showNtfsStrems_ModeForArc(false),
 
       _exStyle(0),
-      _timestampLevel(kTimestampPrintLevel_MIN),
+      _timestampLevel(kTimestampPrintLevel_DMY_DAY),
       _listViewMode(3),
       _xSize(300),
       _startGroupSelect(0),
+      _navigationPosition(0),
+      _navigatingHistory(false),
       m_DropHighlighted_SelectionIndex(-1)
   {}
 

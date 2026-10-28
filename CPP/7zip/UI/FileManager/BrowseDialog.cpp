@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // BrowseDialog.cpp
  
 #include "StdAfx.h"
@@ -9,6 +10,8 @@
 #ifndef UNDER_CE
 #include "../../../Windows/CommonDialog.h"
 #include "../../../Windows/Shell.h"
+#include <shobjidl.h>
+#include "../../../Common/MyCom.h"
 #endif
 
 #include "../../../Windows/FileName.h"
@@ -875,15 +878,58 @@ bool MyBrowseForFolder(HWND owner, LPCWSTR title, LPCWSTR path, UString &resultP
   resultPath.Empty();
 
   #ifndef UNDER_CE
-
-#ifdef USE_MY_BROWSE_DIALOG
-  if (!IsSuperOrDevicePath(path))
-  if (MyStringLen(path) < MAX_PATH)
-#endif
-    return NShell::BrowseForFolder(owner, title, path, resultPath);
-
+  CMyComPtr<IFileOpenDialog> dialog;
+  HRESULT result = ::CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER,
+      IID_IFileOpenDialog, (void **)&dialog);
+  if (SUCCEEDED(result))
+  {
+    FILEOPENDIALOGOPTIONS options;
+    result = dialog->GetOptions(&options);
+    if (SUCCEEDED(result))
+      result = dialog->SetOptions(options | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM | FOS_PATHMUSTEXIST);
+    if (title && SUCCEEDED(result))
+      result = dialog->SetTitle(title);
+    if (path && *path && SUCCEEDED(result))
+    {
+      UString initial = path;
+      const unsigned rootSize = GetRootPrefixSize(initial);
+      while (!initial.IsEmpty() && !NWindows::NFile::NFind::DoesDirExist(us2fs(initial)))
+      {
+        if (initial.Len() <= rootSize)
+          break;
+        if (IS_PATH_SEPAR(initial.Back()))
+          initial.DeleteBack();
+        const int slash = initial.ReverseFind_PathSepar();
+        if (slash < 0)
+          break;
+        initial.DeleteFrom((unsigned)slash + 1);
+      }
+      CMyComPtr<IShellItem> folder;
+      if (SUCCEEDED(::SHCreateItemFromParsingName(initial, NULL, IID_IShellItem, (void **)&folder)))
+        dialog->SetFolder(folder);
+    }
+    if (SUCCEEDED(result))
+      result = dialog->Show(owner);
+    if (SUCCEEDED(result))
+    {
+      CMyComPtr<IShellItem> folder;
+      result = dialog->GetResult(&folder);
+      if (SUCCEEDED(result))
+      {
+        PWSTR selectedPath = NULL;
+        result = folder->GetDisplayName(SIGDN_FILESYSPATH, &selectedPath);
+        if (SUCCEEDED(result))
+          resultPath = selectedPath;
+        ::CoTaskMemFree(selectedPath);
+      }
+    }
+  }
+  if (FAILED(result) && result != HRESULT_FROM_WIN32(ERROR_CANCELLED))
+    MessageBox_HResError(owner, result, path);
+  return SUCCEEDED(result);
   #endif //  UNDER_CE
 
+  #ifdef UNDER_CE
   #ifdef USE_MY_BROWSE_DIALOG
 
   CBrowseDialog dialog;
@@ -897,6 +943,7 @@ bool MyBrowseForFolder(HWND owner, LPCWSTR title, LPCWSTR path, UString &resultP
   resultPath = dialog.FilePath;
   return true;
 
+  #endif
   #endif
 }
 

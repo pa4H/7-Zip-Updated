@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 #include "CompressDialogRes.h"
 #include "../../GuiCommon.rc"
 
@@ -75,5 +76,4 @@ BEGIN
   
   DEFPUSHBUTTON  "OK",     IDOK,     bx3, by, bxs, bys, WS_GROUP
   PUSHBUTTON     "Cancel", IDCANCEL, bx2, by, bxs, bys
-  PUSHBUTTON     "Help",   IDHELP,   bx1, by, bxs, bys
 END

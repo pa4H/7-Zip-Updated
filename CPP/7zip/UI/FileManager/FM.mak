@@ -1,10 +1,11 @@
+# Modified for the public 7-Zip fork on 2026-10-27.
 CFLAGS = $(CFLAGS) \
   -DZ7_LANG \
 
 !IFDEF UNDER_CE
 LIBS = $(LIBS) ceshell.lib Commctrl.lib
 !ELSE
-LIBS = $(LIBS) comctl32.lib htmlhelp.lib comdlg32.lib Mpr.lib Gdi32.lib
+LIBS = $(LIBS) comctl32.lib comdlg32.lib uuid.lib Mpr.lib Gdi32.lib
 CFLAGS = $(CFLAGS) -DZ7_DEVICE_FILE
 LFLAGS = $(LFLAGS) /DELAYLOAD:mpr.dll
 LIBS = $(LIBS) delayimp.lib

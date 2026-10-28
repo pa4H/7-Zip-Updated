@@ -1,0 +1,65 @@
+Third-party artwork in 7-Zip fork 1.0
+===================================
+
+Windows 10 7-Zip toolbar theme
+Author: Owen Burgoyne (C3POwen)
+Copyright: Owen Burgoyne
+Original work:
+https://www.deviantart.com/c3powen/art/Windows-10-7-Zip-toolbar-theme-602997424
+Collected from:
+https://github.com/RipplePiam/7zip-Theme
+
+The author's original publication identifies the work as licensed under
+Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported:
+https://creativecommons.org/licenses/by-nc-sa/3.0/
+The supplied theme.ini instead identifies version 4.0. That metadata is kept
+unchanged for provenance. This fork relies on the license explicitly stated
+on the author's original publication, CC BY-NC-SA 3.0. Both license texts
+are provided in licenses/ for reference.
+
+The 24x24 and 48x36 toolbar bitmap files are incorporated unchanged from
+assets/interface/. No pixel edits have been made. The work is included as
+separate artwork in a collection with the application, not relicensed as
+LGPL. Changes to that artwork, if made later, must be identified and licensed
+under the applicable ShareAlike terms. Attribution and license information
+must accompany redistribution, and the artwork must not be used commercially
+without a separate permission from its rights holder.
+
+The application's source code retains its own licenses as documented in
+DOC/License.txt. Do not describe the entire distribution, including this
+artwork, as having unrestricted commercial-use permission.
+
+Windows 10 file-type theme
+--------------------------
+Author as identified by the supplied theme.ini: masamunecyrus
+Author's website: http://masamunecyrus.deviantart.com/
+Collected from: https://github.com/RipplePiam/7zip-Theme
+
+The supplied theme.ini lists the license as N/A and is preserved unchanged.
+On 2026-10-28 the fork owner, pa4H, stated that permission had been obtained
+and confirmed permission to publish these icons with sources on GitHub and
+to distribute them in the compiled application. This records the owner's
+confirmation; it does not invent a public license or relicense the artwork
+under LGPL. No separate permission document was supplied in this project.
+
+The ICO files are incorporated unchanged. The split archive resource uses
+001.ico, corresponding to the existing .001 association. Existing archive
+resource IDs and file associations are preserved.
+
+The Up icon exported to assets/up-reference/ is a local reference extracted
+from Windows common controls for redrawing. That folder is not included in
+source distributions.
+
+Custom Up icon
+--------------
+On 2026-10-28 the fork owner, pa4H, supplied up-updated.png (16x16) and
+requested its use in the application. The supplied PNG is preserved unchanged
+in assets/interface/. The accompanying ICO is a format conversion with the
+same pixels and transparency and is embedded in the File Manager resources.
+The application now uses this supplied icon instead of the Windows reference.
+
+7-Zip source and original resources
+----------------------------------
+Copyright (C) 1999-2026 Igor Pavlov and other contributors listed in source.
+See License.txt, copying.txt, and unRarLicense.txt in the binary package,
+or DOC/License.txt, DOC/copying.txt, and DOC/unRarLicense.txt in the sources.

@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // ZipRegistry.cpp
 
 #include "StdAfx.h"
@@ -119,6 +120,7 @@ void CInfo::Save() const
 
   key.RecurseDeleteKey(kPathHistory);
   key.SetValue_Strings(kPathHistory, Paths);
+  key.SetValue(TEXT("LastBasePath"), LastBasePath);
 }
 
 void Save_ShowPassword(bool showPassword)
@@ -147,6 +149,7 @@ void CInfo::Load()
   SplitDest.Val = true;
 
   Paths.Clear();
+  LastBasePath.Empty();
 
   CS_LOCK
   CKey key;
@@ -154,6 +157,7 @@ void CInfo::Load()
     return;
   
   key.GetValue_Strings(kPathHistory, Paths);
+  key.QueryValue(TEXT("LastBasePath"), LastBasePath);
   UInt32 v;
   if (key.GetValue_UInt32_IfOk(kExtractMode, v) == ERROR_SUCCESS && v <= NPathMode::kAbsPaths)
   {

@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // PanelFolderChange.cpp
 
 #include "StdAfx.h"
@@ -406,7 +407,7 @@ static int Find_FileExtension_DotPos_in_path(const wchar_t *path)
 void CPanel::LoadFullPathAndShow()
 {
   LoadFullPath();
-  _appState->FolderHistory.AddString(_currentFolderPrefix);
+  RememberNavigationPath();
 
   _headerComboBox.SetText(_currentFolderPrefix);
 
@@ -862,6 +863,47 @@ bool CPanel::OnNotifyComboBox(LPNMHDR NON_CE_VAR(header), LRESULT & NON_CE_VAR(r
   return false;
 }
 
+
+void CPanel::RememberNavigationPath()
+{
+  if (_navigatingHistory)
+    return;
+  if (!_navigationPaths.IsEmpty() &&
+      _navigationPaths[_navigationPosition] == _currentFolderPrefix)
+    return;
+  if (!_navigationPaths.IsEmpty())
+    _navigationPaths.DeleteFrom(_navigationPosition + 1);
+  _navigationPaths.Add(_currentFolderPrefix);
+  if (_navigationPaths.Size() > 256)
+    _navigationPaths.Delete(0);
+  _navigationPosition = _navigationPaths.Size() - 1;
+}
+
+void CPanel::NavigateHistory(bool forward)
+{
+  if (_navigatingHistory || _navigationPaths.IsEmpty() ||
+      (forward ? _navigationPosition + 1 >= _navigationPaths.Size() : _navigationPosition == 0))
+    return;
+  const unsigned next = forward ? _navigationPosition + 1 : _navigationPosition - 1;
+  const UString oldPath = _currentFolderPrefix;
+  const UString path = _navigationPaths[next];
+  struct CHistoryGuard
+  {
+    bool &Busy;
+    CHistoryGuard(bool &busy): Busy(busy) { Busy = true; }
+    ~CHistoryGuard() { Busy = false; }
+  } guard(_navigatingHistory);
+  const HRESULT result = BindToPathAndRefresh(path);
+  // BindToPath may successfully open only the existing prefix of a stale path.
+  if (result == S_OK && _currentFolderPrefix == path)
+    _navigationPosition = next;
+  else
+  {
+    BindToPathAndRefresh(oldPath);
+    MessageBox_Error_HRESULT(result == S_OK ? HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND) : result);
+  }
+  SetFocusToList();
+}
 
 void CPanel::FoldersHistory()
 {

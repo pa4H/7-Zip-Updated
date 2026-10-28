@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // ViewSettings.cpp
 
 #include "StdAfx.h"
@@ -237,14 +238,6 @@ void CListMode::Save() const
 void CListMode::Read()
 {
   Init();
-  UInt32 t;
-  if (!ReadUi32Val(kListMode, t))
-    return;
-  for (int i = 0; i < 2; i++)
-  {
-    Panels[i] = t & 0xFF;
-    t >>= 8;
-  }
 }
 
 static UString GetPanelPathName(UInt32 panelIndex)

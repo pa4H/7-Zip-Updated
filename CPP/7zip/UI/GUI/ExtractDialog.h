@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // ExtractDialog.h
 
 #ifndef ZIP7_INC_EXTRACT_DIALOG_H
@@ -75,6 +76,9 @@ public:
 
   UString DirPath;
   UString ArcPath;
+  UString ArchiveFolderName;
+  bool SmartDestination;
+  bool AddArchiveFolder;
 
   #ifndef Z7_SFX
   UString Password;
@@ -102,6 +106,8 @@ public:
   }
 
   CExtractDialog():
+    SmartDestination(false),
+    AddArchiveFolder(true),
     PathMode_Force(false),
     OverwriteMode_Force(false)
   {

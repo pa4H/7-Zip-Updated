@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // ExtractGUI.cpp
 
 #include "StdAfx.h"
@@ -18,6 +19,9 @@
 
 #include "../Common/ArchiveExtractCallback.h"
 #include "../Common/PropIDUtils.h"
+#ifndef Z7_SFX
+#include "../Common/ExtractDestination.h"
+#endif
 
 #include "../Explorer/MyMessages.h"
 
@@ -164,6 +168,46 @@ HRESULT CThreadExtracting::ProcessVirt()
 
 
 
+#ifndef Z7_SFX
+class CInspectArchiveRoot: public CProgressThreadVirt
+{
+  HRESULT ProcessVirt() Z7_override
+  {
+    CArchiveLink archive;
+    const HRESULT result = archive.Open2(OpenOptions, Callback);
+    if (result == E_ABORT)
+      return result;
+    // Ordinary open errors are reported by the extraction operation itself.
+    if (result != S_OK || archive.Arcs.IsEmpty())
+      return S_OK;
+    UInt32 count = 0;
+    const CArc &arc = *archive.GetArc();
+    if (arc.Archive->GetNumberOfItems(&count) != S_OK)
+      return S_OK;
+    CExtractRootInfo root;
+    for (UInt32 i = 0; i < count; i++)
+    {
+      RINOK(Sync.CheckStop())
+      UString path;
+      bool isDir = false;
+      if (arc.GetItem_Path(i, path) != S_OK ||
+          Archive_IsItem_Dir(arc.Archive, i, isDir) != S_OK)
+        return S_OK;
+      root.Add(path, isDir);
+      if (root.CannotBeSingleFolder())
+        return S_OK;
+    }
+    SingleFolder = root.HasSingleFolder();
+    return S_OK;
+  }
+public:
+  COpenOptions OpenOptions;
+  CExtractCallbackImp *Callback;
+  bool SingleFolder;
+  CInspectArchiveRoot(): Callback(NULL), SingleFolder(false) {}
+};
+#endif
+
 HRESULT ExtractGUI(
     // DECL_EXTERNAL_CODECS_LOC_VARS
     CCodecs *codecs,
@@ -213,6 +257,35 @@ HRESULT ExtractGUI(
       NName::NormalizeDirPathPrefix(outputDirFull);
 
       dialog.DirPath = fs2us(outputDirFull);
+
+      #ifndef Z7_SFX
+      if (archivePathsFull.Size() == 1 && !options.StdInMode)
+      {
+        CInspectArchiveRoot inspect;
+        inspect.OpenOptions.codecs = codecs;
+        inspect.OpenOptions.types = &formatIndices;
+        inspect.OpenOptions.excludedFormats = &excludedFormatIndices;
+        inspect.OpenOptions.props = &options.Properties;
+        inspect.OpenOptions.filePath = archivePathsFull[0];
+        inspect.Callback = extractCallback;
+        extractCallback->ProgressDialog = &inspect;
+        const HRESULT createResult = inspect.Create(LangString(IDS_OPENNING), hwndParent);
+        extractCallback->ProgressDialog = NULL;
+        RINOK(createResult)
+        RINOK(inspect.Result)
+        dialog.SmartDestination = true;
+        dialog.ArchiveFolderName = ExtractArchiveFolderName(archivePathsFull[0]);
+        dialog.AddArchiveFolder = !inspect.SingleFolder;
+        // The shell extension already includes its suggested archive folder
+        // in -o. Remove that legacy suffix before applying our root rule.
+        UString legacyName = archivePathsFull[0].Ptr(
+            (unsigned)(archivePathsFull[0].ReverseFind_PathSepar() + 1));
+        const int dot = legacyName.ReverseFind_Dot();
+        if (dot > 0)
+          legacyName.DeleteFrom((unsigned)dot);
+        dialog.DirPath = ExtractBasePath(dialog.DirPath, legacyName);
+      }
+      #endif
 
       dialog.OverwriteMode = options.OverwriteMode;
       dialog.OverwriteMode_Force = options.OverwriteMode_Force;

@@ -1,3 +1,5 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
+// About caption updated on 2026-10-28.
 // AboutDialog.cpp
 
 #include "StdAfx.h"
@@ -5,6 +7,7 @@
 #include "../../../../C/CpuArch.h"
 
 #include "../../MyVersion.h"
+#include "../../ForkConfig.h"
 
 #include "../Common/LoadCodecs.h"
 
@@ -14,18 +17,8 @@
 #include "HelpUtils.h"
 #include "LangUtils.h"
 
-#ifdef Z7_LANG
-static const UInt32 kLangIDs[] =
-{
-  IDT_ABOUT_INFO
-};
-#endif
-
 #define kHomePageURL TEXT("https://www.7-zip.org/")
 #define kHelpTopic "start.htm"
-
-#define LLL_(quote) L##quote
-#define LLL(quote) LLL_(quote)
 
 extern CCodecs *g_CodecsObj;
 
@@ -43,10 +36,10 @@ bool CAboutDialog::OnInit()
 
   #ifdef Z7_LANG
   LangSetWindowText(*this, IDD_ABOUT);
-  LangSetDlgItems(*this, kLangIDs, Z7_ARRAY_SIZE(kLangIDs));
   #endif
-  SetItemText(IDT_ABOUT_VERSION, UString("7-Zip " MY_VERSION_CPU));
-  SetItemText(IDT_ABOUT_DATE, LLL(MY_DATE));
+  SetItemText(IDT_ABOUT_VERSION, UString("7-Zip " Z7_FORK_VERSION " fork by pa4H (c) 2026"));
+  SetItemText(IDT_ABOUT_DATE, UString("Based on 7-Zip " MY_VERSION));
+  EnableItem(IDB_ABOUT_GITHUB, Z7_FORK_GITHUB_URL[0] != 0);
   
   NormalizePosition();
   return CModalDialog::OnInit();
@@ -63,6 +56,10 @@ bool CAboutDialog::OnButtonClicked(unsigned buttonID, HWND buttonHWND)
   switch (buttonID)
   {
     case IDB_ABOUT_HOMEPAGE: url = kHomePageURL; break;
+    case IDB_ABOUT_GITHUB:
+      if (Z7_FORK_GITHUB_URL[0] != 0)
+        ::ShellExecuteW(NULL, L"open", Z7_FORK_GITHUB_URL, NULL, NULL, SW_SHOWNORMAL);
+      return true;
     default:
       return CModalDialog::OnButtonClicked(buttonID, buttonHWND);
   }

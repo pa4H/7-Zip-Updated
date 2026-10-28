@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // StdAfx.h
 
 #ifndef ZIP7_INC_STDAFX_H
@@ -5,6 +6,16 @@
 
 #if defined(_MSC_VER) && _MSC_VER >= 1800
 #pragma warning(disable : 4464) // relative include path contains '..'
+#endif
+
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0A00
+#endif
+#ifndef WINVER
+#define WINVER 0x0A00
+#endif
+#ifndef Z7_WIN32_WINNT_MIN
+#define Z7_WIN32_WINNT_MIN 0x0A00
 #endif
 
 #include "../../../Common/Common.h"

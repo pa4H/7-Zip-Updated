@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // LangUtils.cpp
 
 #include "StdAfx.h"
@@ -294,7 +295,7 @@ static void OpenDefaultLang()
           FString path (dirPrefix);
           path += name;
           path += ".txt";
-          if (LangOpen(g_Lang, path))
+          if (name == "ru" && LangOpen(g_Lang, path))
           {
             g_LangID = name;
             return;
@@ -317,17 +318,12 @@ void ReloadLang()
       OpenDefaultLang();
     return;
   }
-  if (g_LangID.Len() > 1 || g_LangID[0] != L'-')
+  if (g_LangID.IsEqualTo_NoCase(L"ru"))
   {
-    FString s = us2fs(g_LangID);
-    if (s.ReverseFind_PathSepar() < 0)
-    {
-      if (s.ReverseFind_Dot() < 0)
-        s += ".txt";
-      s.Insert(0, GetLangDirPrefix());
-      LangOpen(g_Lang, s);
-    }
+    if (LangOpen(g_Lang, GetLangDirPrefix() + FTEXT("ru.txt")))
+      return;
   }
+  g_LangID = "-";
 }
 
 #endif

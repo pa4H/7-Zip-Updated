@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // ZipRegistry.h
 
 #ifndef ZIP7_INC_ZIP_REGISTRY_H
@@ -36,6 +37,7 @@ namespace NExtract
     CBoolPair ShowPassword;
 
     UStringVector Paths;
+    UString LastBasePath;
 
     void Save() const;
     void Load();

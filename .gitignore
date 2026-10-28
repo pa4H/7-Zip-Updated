@@ -1,0 +1,10 @@
+# Local downloads and generated Windows builds.
+/.cache/
+/dist/
+/build/
+**/x64/
+**/x86/
+**/arm64/
+**/o/
+# Extracted Windows artwork is a local redrawing reference only.
+/assets/up-reference/

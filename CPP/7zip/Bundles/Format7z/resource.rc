@@ -1,5 +1,6 @@
+// File-type icon resources changed on 2026-10-28; see THIRD_PARTY_NOTICES.txt.
 #include "../../MyVersionInfo.rc"
 
 MY_VERSION_INFO_DLL("7z Standalone Plugin", "7za")
 
-101  ICON  "../../Archive/Icons/7z.ico"
+101  ICON  "../../../../assets/filetypes/7z.ico"

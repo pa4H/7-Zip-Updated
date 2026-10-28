@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // ExtractDialog.cpp
 
 #include "StdAfx.h"
@@ -11,6 +12,7 @@
 
 #ifndef Z7_NO_REGISTRY
 #include "../FileManager/HelpUtils.h"
+#include "../Common/ExtractDestination.h"
 #endif
 
 
@@ -191,8 +193,16 @@ bool CExtractDialog::OnInit()
   UString pathPrefix = DirPath;
 
   #ifndef Z7_SFX
+
+  InitExtractHistoryButtons(*this, _info.Paths, IDB_EXTRACT_RECENT_1);
   
-  if (_info.SplitDest.Val)
+  if (SmartDestination)
+  {
+    pathPrefix = ExtractSuggestedPath(_info, DirPath, ArchiveFolderName, AddArchiveFolder);
+    ShowItem_Bool(IDX_EXTRACT_NAME_ENABLE, false);
+    ShowItem_Bool(IDE_EXTRACT_NAME, false);
+  }
+  else if (_info.SplitDest.Val)
   {
     CheckButton(IDX_EXTRACT_NAME_ENABLE, true);
     UString pathName;
@@ -254,6 +264,18 @@ void CExtractDialog::UpdatePasswordControl()
 
 bool CExtractDialog::OnButtonClicked(unsigned buttonID, HWND buttonHWND)
 {
+  #ifndef Z7_NO_REGISTRY
+  if (buttonID >= IDB_EXTRACT_RECENT_1 && buttonID <= IDB_EXTRACT_RECENT_3)
+  {
+    const unsigned index = buttonID - IDB_EXTRACT_RECENT_1;
+    if (index < _info.Paths.Size())
+    {
+      _path.SetCurSel(-1);
+      _path.SetText(_info.Paths[index]);
+    }
+    return true;
+  }
+  #endif
   switch (buttonID)
   {
     case IDB_EXTRACT_SET_PATH:
@@ -372,7 +394,7 @@ void CExtractDialog::OnOK()
   
   #ifndef Z7_SFX
   
-  const bool splitDest = IsButtonCheckedBool(IDX_EXTRACT_NAME_ENABLE);
+  const bool splitDest = !SmartDestination && IsButtonCheckedBool(IDX_EXTRACT_NAME_ENABLE);
   if (splitDest)
   {
     UString pathName;
@@ -381,7 +403,7 @@ void CExtractDialog::OnOK()
     s += pathName;
     NName::NormalizeDirPathPrefix(s);
   }
-  if (splitDest != _info.SplitDest.Val)
+  if (!SmartDestination && splitDest != _info.SplitDest.Val)
   {
     _info.SplitDest.Def = true;
     _info.SplitDest.Val = splitDest;
@@ -392,6 +414,10 @@ void CExtractDialog::OnOK()
   DirPath = s;
   
   #ifndef Z7_NO_REGISTRY
+  if (SmartDestination)
+    RememberExtractDestination(_info, s, AddArchiveFolder ? ArchiveFolderName : UString());
+  else
+  {
   _info.Paths.Clear();
   #ifndef Z7_SFX
   AddUniqueString(_info.Paths, s);
@@ -405,6 +431,7 @@ void CExtractDialog::OnOK()
       AddUniqueString(_info.Paths, sTemp);
     }
   _info.Save();
+  }
   #endif
   
   CModalDialog::OnOK();

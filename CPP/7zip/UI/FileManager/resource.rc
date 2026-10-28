@@ -1,3 +1,6 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
+// Alternate-streams menu entry removed on 2026-10-28.
+// Custom Up icon added on 2026-10-28.
 #include "../../MyVersionInfo.rc"
 #include "../../GuiCommon.rc"
 #include "resource.h"
@@ -7,8 +10,6 @@ MY_VERSION_INFO_APP("7-Zip File Manager", "7zFM")
 IDR_ACCELERATOR1 ACCELERATORS
 BEGIN
 //  "N",     IDM_CREATE_FILE,      VIRTKEY, CONTROL, NOINVERT
-  VK_F1,   IDM_HELP_CONTENTS,    VIRTKEY, NOINVERT
-  VK_F12,  IDM_FOLDERS_HISTORY,  VIRTKEY, ALT, NOINVERT
 //  VK_F7,   IDM_CREATE_FOLDER,    VIRTKEY, NOINVERT
 END
 
@@ -51,7 +52,6 @@ BEGIN
     MENUITEM "Com&bine files...",           IDM_COMBINE
     MY_MENUITEM_SEPARATOR
     MENUITEM "P&roperties\tAlt+Enter",      IDM_PROPERTIES
-    MENUITEM "Comme&nt...\tCtrl+Z",         IDM_COMMENT
     // MENUITEM "Calculate checksum",          IDM_CRC
     POPUP "CRC" MY_MENUITEM_ID(0)
     BEGIN
@@ -73,7 +73,6 @@ BEGIN
     MENUITEM "Create File\tCtrl+N",         IDM_CREATE_FILE
     MY_MENUITEM_SEPARATOR
     MENUITEM "&Link...",                    IDM_LINK
-    MENUITEM "&Alternate streams",          IDM_ALT_STREAMS
     MY_MENUITEM_SEPARATOR
     MENUITEM "E&xit\tAlt+F4",               IDCLOSE
   END
@@ -94,9 +93,6 @@ BEGIN
   END
   POPUP "&View" MY_MENUITEM_ID(IDM_VIEW)
   BEGIN
-    MENUITEM "Lar&ge Icons\tCtrl+1",        IDM_VIEW_LARGE_ICONS
-    MENUITEM "S&mall Icons\tCtrl+2",        IDM_VIEW_SMALL_ICONS
-    MENUITEM "&List\tCtrl+3",               IDM_VIEW_LIST
     MENUITEM "&Details\tCtrl+4",            IDM_VIEW_DETAILS, MY_MFS_CHECKED
     MY_MENUITEM_SEPARATOR
     MENUITEM "Name\tCtrl+F3",               IDM_VIEW_ARANGE_BY_NAME
@@ -123,7 +119,6 @@ BEGIN
     END
     MENUITEM "Open Root Folder\t\\",        IDM_OPEN_ROOT_FOLDER
     MENUITEM "Up One Level\tBackspace",     IDM_OPEN_PARENT_FOLDER
-    MENUITEM "Folders History...\tAlt+F12", IDM_FOLDERS_HISTORY
     MENUITEM "&Refresh\tCtrl+R",            IDM_VIEW_REFRESH
     MENUITEM "Auto Refresh",                IDM_VIEW_AUTO_REFRESH
 
@@ -131,56 +126,33 @@ BEGIN
     // MENUITEM "Show deleted files",          IDM_VIEW_SHOW_DELETED
 
   END
-  POPUP "F&avorites" MY_MENUITEM_ID(IDM_FAVORITES)
-  BEGIN
-    POPUP "&Add folder to Favorites as" MY_MENUITEM_ID(IDM_ADD_TO_FAVORITES)
-    BEGIN
-        MY_MENUITEM_SEPARATOR
-    END
-    MY_MENUITEM_SEPARATOR
-  END
-  POPUP "&Tools" MY_MENUITEM_ID(IDM_TOOLS)
-  BEGIN
-    MENUITEM "&Options...",                 IDM_OPTIONS
-    MY_MENUITEM_SEPARATOR
-    MENUITEM "&Benchmark",                  IDM_BENCHMARK
-  #ifdef UNDER_CE
-    MENUITEM "Benchmark 2",                 IDM_BENCHMARK2
-  #endif
-    MY_MENUITEM_SEPARATOR
-    MENUITEM "Delete Temporary Files...",   IDM_TEMP_DIR
-  #ifndef UNDER_CE
-  END
-  POPUP "&Help" MY_MENUITEM_ID(IDM_HELP)
-  BEGIN
-    MENUITEM "&Contents...\tF1",            IDM_HELP_CONTENTS
-  #endif
-    MY_MENUITEM_SEPARATOR
-  MENUITEM "&About 7-Zip...",               IDM_ABOUT
-  END
+  MENUITEM "&Settings", IDM_OPTIONS
+  MENUITEM "&About", IDM_ABOUT
 END
 
 
+
 IDI_ICON  ICON  "../../UI/FileManager/FM.ico"
+IDI_UP    ICON  "../../../../assets/interface/up-updated.ico"
 
 #ifndef UNDER_CE
 1  24  MOVEABLE PURE   "../../UI/FileManager/7zFM.exe.manifest"
 #endif
 
-IDB_ADD        BITMAP  "../../UI/FileManager/Add.bmp"
-IDB_EXTRACT    BITMAP  "../../UI/FileManager/Extract.bmp"
-IDB_TEST       BITMAP  "../../UI/FileManager/Test.bmp"
-IDB_COPY       BITMAP  "../../UI/FileManager/Copy.bmp"
-IDB_MOVE       BITMAP  "../../UI/FileManager/Move.bmp"
-IDB_DELETE     BITMAP  "../../UI/FileManager/Delete.bmp"
-IDB_INFO       BITMAP  "../../UI/FileManager/Info.bmp"
-IDB_ADD2       BITMAP  "../../UI/FileManager/Add2.bmp"
-IDB_EXTRACT2   BITMAP  "../../UI/FileManager/Extract2.bmp"
-IDB_TEST2      BITMAP  "../../UI/FileManager/Test2.bmp"
-IDB_COPY2      BITMAP  "../../UI/FileManager/Copy2.bmp"
-IDB_MOVE2      BITMAP  "../../UI/FileManager/Move2.bmp"
-IDB_DELETE2    BITMAP  "../../UI/FileManager/Delete2.bmp"
-IDB_INFO2      BITMAP  "../../UI/FileManager/Info2.bmp"
+IDB_ADD        BITMAP  "../../../../assets/interface/48x36/Add.bmp"
+IDB_EXTRACT    BITMAP  "../../../../assets/interface/48x36/Extract.bmp"
+IDB_TEST       BITMAP  "../../../../assets/interface/48x36/Test.bmp"
+IDB_COPY       BITMAP  "../../../../assets/interface/48x36/Copy.bmp"
+IDB_MOVE       BITMAP  "../../../../assets/interface/48x36/Move.bmp"
+IDB_DELETE     BITMAP  "../../../../assets/interface/48x36/Delete.bmp"
+IDB_INFO       BITMAP  "../../../../assets/interface/48x36/Info.bmp"
+IDB_ADD2       BITMAP  "../../../../assets/interface/24x24/Add.bmp"
+IDB_EXTRACT2   BITMAP  "../../../../assets/interface/24x24/Extract.bmp"
+IDB_TEST2      BITMAP  "../../../../assets/interface/24x24/Test.bmp"
+IDB_COPY2      BITMAP  "../../../../assets/interface/24x24/Copy.bmp"
+IDB_MOVE2      BITMAP  "../../../../assets/interface/24x24/Move.bmp"
+IDB_DELETE2    BITMAP  "../../../../assets/interface/24x24/Delete.bmp"
+IDB_INFO2      BITMAP  "../../../../assets/interface/24x24/Info.bmp"
 
 
 STRINGTABLE

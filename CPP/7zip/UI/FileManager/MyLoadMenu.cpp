@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // MyLoadMenu.cpp
 
 #include "StdAfx.h"
@@ -24,8 +25,6 @@
 
 using namespace NWindows;
 
-static const UINT k_MenuID_OpenBookmark = 830;
-static const UINT k_MenuID_SetBookmark = 810;
 static const UINT k_MenuID_TimePopup = IDM_VIEW_TIME_POPUP;
 static const UINT k_MenuID_Time = IDM_VIEW_TIME;
 
@@ -43,8 +42,7 @@ enum
 {
   k_MenuIndex_File = 0,
   k_MenuIndex_Edit,
-  k_MenuIndex_View,
-  k_MenuIndex_Bookmarks
+  k_MenuIndex_View
 };
 
 #ifdef Z7_LANG
@@ -53,13 +51,11 @@ static const UInt32 k_LangID_TopMenuItems[] =
   IDM_FILE,
   IDM_EDIT,
   IDM_VIEW,
-  IDM_FAVORITES,
-  IDM_TOOLS,
-  IDM_HELP
+  IDM_OPTIONS,
+  IDM_ABOUT
 };
 
 static const UInt32 k_LangID_Toolbars = IDM_VIEW_TOOLBARS;
-static const UInt32 k_LangID_AddToFavorites = IDM_ADD_TO_FAVORITES;
 
 static const CIDLangPair kIDLangPairs[] =
 {
@@ -187,9 +183,7 @@ static void MyChangeMenu(HMENU menuLoc, unsigned menuID, unsigned level, unsigne
           }
           else if (level == 1)
           {
-            if (menuID == IDM_FAVORITES || (menuID == 0 && menuIndex == k_MenuIndex_Bookmarks))
-              langID = k_LangID_AddToFavorites;
-            else if (menuID == IDM_VIEW || (menuID == 0 && menuIndex == k_MenuIndex_View))
+            if (menuID == IDM_VIEW || (menuID == 0 && menuIndex == k_MenuIndex_View))
             {
               if (Is_MenuItem_TimePopup(item))
                 langID = k_MenuID_TimePopup;
@@ -200,8 +194,7 @@ static void MyChangeMenu(HMENU menuLoc, unsigned menuID, unsigned level, unsigne
         }
         if (langID == k_MenuID_TimePopup)
           continue;
-        if (langID != k_LangID_AddToFavorites)
-          MyChangeMenu(item.hSubMenu, langID, level + 1, i);
+        MyChangeMenu(item.hSubMenu, langID, level + 1, i);
         if (langID == 0)
           continue;
         LangString_OnlyFromLangFile(langID, newString);
@@ -417,9 +410,7 @@ void OnMenuActivating(HWND /* hWnd */, HMENU hMenu, int position)
     // View;
     CMenu menu;
     menu.Attach(hMenu);
-    menu.CheckRadioItem(
-        IDM_VIEW_LARGE_ICONS, IDM_VIEW_DETAILS,
-        IDM_VIEW_LARGE_ICONS + g_App.GetListViewMode(), MF_BYCOMMAND);
+    menu.CheckItemByID(IDM_VIEW_DETAILS, true);
 
     menu.CheckRadioItem(
         IDM_VIEW_ARANGE_BY_NAME,
@@ -452,7 +443,9 @@ void OnMenuActivating(HWND /* hWnd */, HMENU hMenu, int position)
         {
           wchar_t s[64];
           s[0] = 0;
-          if (ConvertUtcFileTimeToString(ft, s, kTimestampPrintLevel_DAY))
+          const int level = g_App.GetTimestampLevel();
+          const bool dmy = level == kTimestampPrintLevel_DMY_DAY || level == kTimestampPrintLevel_DMY_MIN;
+          if (ConvertUtcFileTimeToString(ft, s, dmy ? kTimestampPrintLevel_DMY_DAY : kTimestampPrintLevel_DAY))
             item.StringValue = s;
         }
 
@@ -467,6 +460,8 @@ void OnMenuActivating(HWND /* hWnd */, HMENU hMenu, int position)
         
         const int k_TimeLevels[] =
         {
+          kTimestampPrintLevel_DMY_DAY,
+          kTimestampPrintLevel_DMY_MIN,
           kTimestampPrintLevel_DAY,
           kTimestampPrintLevel_MIN,
           kTimestampPrintLevel_SEC,
@@ -498,66 +493,14 @@ void OnMenuActivating(HWND /* hWnd */, HMENU hMenu, int position)
           }
         }
         if (selectedCommand != 0)
-          menu.CheckRadioItem(k_MenuID_Time, last, selectedCommand, MF_BYCOMMAND);
+          subMenu.CheckRadioItem(k_MenuID_Time, last, selectedCommand, MF_BYCOMMAND);
 
         if (subMenu.AppendItem(MF_STRING, IDM_VIEW_TIME_UTC, L"UTC"))
           subMenu.CheckItemByID(IDM_VIEW_TIME_UTC, g_Timestamp_Show_UTC);
       }
     }
   }
-  else if (position == k_MenuIndex_Bookmarks)
-  {
-    CMenu menu;
-    menu.Attach(hMenu);
 
-    CMenu subMenu;
-    subMenu.Attach(menu.GetSubMenu(0));
-    subMenu.RemoveAllItems();
-    unsigned i;
-    
-    for (i = 0; i < 10; i++)
-    {
-      UString s = LangString(IDS_BOOKMARK);
-      s.Add_Space();
-      const char c = (char)(L'0' + i);
-      s.Add_Char(c);
-      s += "\tAlt+Shift+";
-      s.Add_Char(c);
-      subMenu.AppendItem(MF_STRING, k_MenuID_SetBookmark + i, s);
-    }
-
-    menu.RemoveAllItemsFrom(2);
-
-    for (i = 0; i < 10; i++)
-    {
-      UString s = g_App.AppState.FastFolders.GetString(i);
-      const int kMaxSize = 100;
-      const int kFirstPartSize = kMaxSize / 2;
-      if (s.Len() > kMaxSize)
-      {
-        s.Delete(kFirstPartSize, s.Len() - kMaxSize);
-        s.Insert(kFirstPartSize, L" ... ");
-      }
-      if (s.IsEmpty())
-        s = '-';
-      s += "\tAlt+";
-      s.Add_Char((char)('0' + i));
-      menu.AppendItem(MF_STRING, k_MenuID_OpenBookmark + i, s);
-    }
-#if 0
-    {
-      FString tempPathF;
-      if (NFile::NDir::MyGetTempPath(tempPathF))
-      {
-        menu.AppendItem(MF_SEPARATOR, 0, (LPCTSTR)NULL);
-        UString s;
-        s = "Temp : ";
-        s  += fs2us(tempPathF);
-        menu.AppendItem(MF_STRING, k_MenuID_Bookmark_Temp, s);
-      }
-    }
-#endif
-  }
 }
 
 /*
@@ -783,7 +726,6 @@ bool ExecuteFileCommand(unsigned id)
     case IDM_SPLIT: g_App.Split(); break;
     case IDM_COMBINE: g_App.Combine(); break;
     case IDM_PROPERTIES: g_App.Properties(); break;
-    case IDM_COMMENT: g_App.Comment(); break;
     case IDM_CREATE_FOLDER: g_App.CreateFolder(); break;
     case IDM_CREATE_FILE: g_App.CreateFile(); break;
     #ifndef UNDER_CE
@@ -793,13 +735,6 @@ bool ExecuteFileCommand(unsigned id)
     default: return false;
   }
   return true;
-}
-
-static void MyBenchmark(bool totalMode)
-{
-  CPanel::CDisableTimerProcessing disableTimerProcessing1(g_App.Panels[0]);
-  CPanel::CDisableTimerProcessing disableTimerProcessing2(g_App.Panels[1]);
-  Benchmark(totalMode);
 }
 
 bool OnMenuCommand(HWND hWnd, unsigned id)
@@ -858,9 +793,6 @@ bool OnMenuCommand(HWND hWnd, unsigned id)
       break;
 
     //View
-    case IDM_VIEW_LARGE_ICONS:
-    case IDM_VIEW_SMALL_ICONS:
-    case IDM_VIEW_LIST:
     case IDM_VIEW_DETAILS:
     {
       UINT index = id - IDM_VIEW_LARGE_ICONS;
@@ -884,7 +816,6 @@ bool OnMenuCommand(HWND hWnd, unsigned id)
 
     case IDM_OPEN_ROOT_FOLDER:    g_App.OpenRootFolder(); break;
     case IDM_OPEN_PARENT_FOLDER:  g_App.OpenParentFolder(); break;
-    case IDM_FOLDERS_HISTORY:     g_App.FoldersHistory(); break;
     case IDM_VIEW_FLAT_VIEW:      g_App.ChangeFlatMode(); break;
     case IDM_VIEW_REFRESH:        g_App.RefreshView(); break;
     case IDM_VIEW_AUTO_REFRESH:   g_App.Change_AutoRefresh_Mode(); break;
@@ -914,13 +845,6 @@ bool OnMenuCommand(HWND hWnd, unsigned id)
     // Tools
     case IDM_OPTIONS: OptionsDialog(hWnd, g_hInstance); break;
           
-    case IDM_BENCHMARK: MyBenchmark(false); break;
-    case IDM_BENCHMARK2: MyBenchmark(true); break;
-
-    // Help
-    case IDM_HELP_CONTENTS:
-      ShowHelpWindow(kFMHelpTopic);
-      break;
     case IDM_ABOUT:
     {
       CAboutDialog dialog;
@@ -942,17 +866,7 @@ bool OnMenuCommand(HWND hWnd, unsigned id)
 
     default:
     {
-      if (id >= k_MenuID_OpenBookmark && id <= k_MenuID_OpenBookmark + 9)
-      {
-        g_App.OpenBookmark(id - k_MenuID_OpenBookmark);
-        return true;
-      }
-      else if (id >= k_MenuID_SetBookmark && id <= k_MenuID_SetBookmark + 9)
-      {
-        g_App.SetBookmark(id - k_MenuID_SetBookmark);
-        return true;
-      }
-      else if (id >= k_MenuID_Time && (unsigned)id < k_MenuID_Time + g_App._timestampLevels.Size())
+      if (id >= k_MenuID_Time && (unsigned)id < k_MenuID_Time + g_App._timestampLevels.Size())
       {
         g_App.SetTimestampLevel(g_App._timestampLevels[id - k_MenuID_Time]);
         return true;

@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // App.cpp
 
 #include "StdAfx.h"
@@ -26,6 +27,7 @@
 #include "MyLoadMenu.h"
 #include "RegistryUtils.h"
 #include "ViewSettings.h"
+#include "../Common/ExtractDestination.h"
 
 #include "PropertyNameRes.h"
 
@@ -622,6 +624,36 @@ void CApp::OnCopy(bool move, bool copyToSame, unsigned srcPanelIndex)
     LangString(move ? IDS_MOVE : IDS_COPY, copyDialog.Title);
     LangString(move ? IDS_MOVE_TO : IDS_COPY_TO, copyDialog.Static);
     copyDialog.Info = srcPanel.GetItemsInfoString(indices);
+
+    if (!move && !copyToSame && !srcPanel._parentFolders.IsEmpty())
+    {
+      copyDialog.ExtractMode = true;
+      copyDialog.Title = LangString(IDS_EXTRACT);
+      copyDialog.ArchiveFolderName = ExtractArchiveFolderName(srcPanel._parentFolders.Back().RelPath);
+      CMyComPtr<IFolderFolder> root = srcPanel._folder;
+      for (;;)
+      {
+        CMyComPtr<IFolderFolder> parent;
+        if (root->BindToParentFolder(&parent) != S_OK || !parent)
+          break;
+        root = parent;
+      }
+      UInt32 count = 0;
+      CMyComPtr<IFolderSetFlatMode> flatMode;
+      root.QueryInterface(IID_IFolderSetFlatMode, &flatMode);
+      if (flatMode)
+        flatMode->SetFlatMode(false);
+      // Inspect proxy directory entries without reloading the source panel's
+      // flat item map: its selected indices must remain valid for extraction.
+      if (root->GetNumberOfItems(&count) == S_OK && count == 1)
+      {
+        NCOM::CPropVariant isDir;
+        if (root->GetProperty(0, kpidIsDir, &isDir) == S_OK && isDir.vt == VT_BOOL)
+          copyDialog.AddArchiveFolder = isDir.boolVal == VARIANT_FALSE;
+      }
+      if (flatMode && root.Interface() == srcPanel._folder.Interface())
+        flatMode->SetFlatMode(srcPanel._flatMode);
+    }
 
     if (copyDialog.Create(srcPanel.GetParent()) != IDOK)
       return;

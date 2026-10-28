@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 #include "CopyDialogRes.h"
 #include "../../GuiCommon.rc"
 
@@ -12,6 +13,9 @@ CAPTION "Copy"
   LTEXT       "",    IDT_COPY, m, m, xc, 8
   COMBOBOX           IDC_COPY, m, 20, xc - bxsDots - m, 65, MY_COMBO_WITH_EDIT
   PUSHBUTTON  "...", IDB_COPY_SET_PATH, xs - m - bxsDots, 18, bxsDots, bys, WS_GROUP
+  PUSHBUTTON "", IDB_COPY_RECENT_1, m, 38, xc, 16, BS_LEFT
+  PUSHBUTTON "", IDB_COPY_RECENT_2, m, 56, xc, 16, BS_LEFT
+  PUSHBUTTON "", IDB_COPY_RECENT_3, m, 74, xc, 16, BS_LEFT
   LTEXT       "",    IDT_COPY_INFO, m, y, xc, by - y - 1, SS_NOPREFIX | SS_LEFTNOWORDWRAP
   OK_CANCEL
 }

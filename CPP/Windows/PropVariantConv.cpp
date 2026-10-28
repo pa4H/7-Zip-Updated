@@ -1,3 +1,4 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
 // PropVariantConv.cpp
 
 #include "StdAfx.h"
@@ -58,6 +59,14 @@ bool ConvertUtcFileTimeToString2(const FILETIME &utc, unsigned ns100, char *s, i
 
   {
     unsigned val = st.wYear;
+    const bool dmy = level == kTimestampPrintLevel_DMY_DAY || level == kTimestampPrintLevel_DMY_MIN;
+    if (dmy)
+    {
+      *s++ = (char)('0' + st.wDay / 10);
+      *s++ = (char)('0' + st.wDay % 10);
+      UINT_TO_STR_2('-', st.wMonth)
+      *s++ = '-';
+    }
     if (val >= 10000)
     {
       *s++ = (char)('0' + val / 10000);
@@ -69,8 +78,13 @@ bool ConvertUtcFileTimeToString2(const FILETIME &utc, unsigned ns100, char *s, i
     s[0] = (char)('0' + val / 10);
     s += 4;
   }
-  UINT_TO_STR_2('-', st.wMonth)
-  UINT_TO_STR_2('-', st.wDay)
+  if (level == kTimestampPrintLevel_DMY_DAY || level == kTimestampPrintLevel_DMY_MIN)
+    level = level == kTimestampPrintLevel_DMY_DAY ? kTimestampPrintLevel_DAY : kTimestampPrintLevel_MIN;
+  else
+  {
+    UINT_TO_STR_2('-', st.wMonth)
+    UINT_TO_STR_2('-', st.wDay)
+  }
   
   if (level > kTimestampPrintLevel_DAY)
   {

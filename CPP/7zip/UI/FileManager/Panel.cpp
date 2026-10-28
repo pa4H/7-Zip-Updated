@@ -1,3 +1,5 @@
+// Modified for the public 7-Zip fork on 2026-10-27.
+// Custom Up icon added on 2026-10-28.
 // Panel.cpp
 
 #include "StdAfx.h"
@@ -122,6 +124,22 @@ LRESULT CPanel::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
   // g_NumMessages++;
   switch (message)
   {
+    case WM_XBUTTONDOWN:
+      return TRUE;
+    case WM_XBUTTONUP:
+      _panelCallback->PanelWasFocused();
+      NavigateHistory(HIWORD(wParam) == XBUTTON2);
+      return TRUE;
+    case WM_APPCOMMAND:
+    {
+      const int command = GET_APPCOMMAND_LPARAM(lParam);
+      if (command == APPCOMMAND_BROWSER_BACKWARD || command == APPCOMMAND_BROWSER_FORWARD)
+      {
+        NavigateHistory(command == APPCOMMAND_BROWSER_FORWARD);
+        return TRUE;
+      }
+      break;
+    }
     case kShiftSelectMessage:
       OnShiftSelectMessage();
       return 0;
@@ -160,6 +178,8 @@ LRESULT CPanel::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 LRESULT CMyListView::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
+  if (message == WM_XBUTTONDOWN || message == WM_XBUTTONUP || message == WM_APPCOMMAND)
+    return _panel->SendMsg(message, wParam, lParam);
   if (message == WM_CHAR)
   {
     UINT scanCode = (UINT)((lParam >> 16) & 0xFF);
@@ -275,6 +295,8 @@ static LRESULT APIENTRY ComboBoxEditSubclassProc(HWND hwnd, UINT message, WPARAM
 
 LRESULT CMyComboBoxEdit::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
+  if (message == WM_XBUTTONDOWN || message == WM_XBUTTONUP || message == WM_APPCOMMAND)
+    return _panel->SendMsg(message, wParam, lParam);
   // See MSDN / Subclassing a Combo Box / Creating a Combo-box Toolbar
   switch (message)
   {
@@ -444,7 +466,7 @@ bool CPanel::OnCreate(CREATESTRUCT * /* createStruct */)
   const TBBUTTON tbb[] =
   {
     // {0, 0, TBSTATE_ENABLED, BTNS_SEP, 0L, 0},
-    {VIEW_PARENTFOLDER, kParentFolderID, TBSTATE_ENABLED, BTNS_BUTTON, { 0, 0 }, 0, 0 },
+    {0, kParentFolderID, TBSTATE_ENABLED, BTNS_BUTTON, { 0, 0 }, 0, 0 },
     // {0, 0, TBSTATE_ENABLED, BTNS_SEP, 0L, 0},
     // {VIEW_NEWFOLDER, kCreateFolderID, TBSTATE_ENABLED, BTNS_BUTTON, 0L, 0},
   };
@@ -485,12 +507,22 @@ bool CPanel::OnCreate(CREATESTRUCT * /* createStruct */)
       ;
   }
 
-  _headerToolBar.Attach(::CreateToolbarEx ((*this), toolbarStyle,
-      _baseID + 2, 11,
-      (HINSTANCE)HINST_COMMCTRL,
-      IDB_VIEW_SMALL_COLOR,
-      (LPCTBBUTTON)&tbb, Z7_ARRAY_SIZE(tbb),
-      0, 0, 0, 0, sizeof (TBBUTTON)));
+  _headerToolBar.Attach(::CreateWindowEx(0, TOOLBARCLASSNAME, NULL, toolbarStyle,
+      0, 0, 0, 0, *this, (HMENU)(UINT_PTR)(_baseID + 2), g_hInstance, NULL));
+  if (!_headerToolBar || !_headerImageList.Create(16, 16, ILC_COLOR32 | ILC_MASK, 1, 0))
+    return false;
+  _headerToolBar.ButtonStructSize();
+  const HICON upIcon = (HICON)::LoadImage(g_hInstance,
+      MAKEINTRESOURCE(IDI_UP), IMAGE_ICON, 16, 16, 0);
+  if (!upIcon)
+    return false;
+  const int upImageIndex = _headerImageList.AddIcon(upIcon);
+  ::DestroyIcon(upIcon);
+  if (upImageIndex != 0)
+    return false;
+  _headerToolBar.SetImageList(0, _headerImageList);
+  if (!_headerToolBar.AddButton(Z7_ARRAY_SIZE(tbb), (LPTBBUTTON)tbb))
+    return false;
 
   #ifndef UNDER_CE
   // Load ComboBoxEx class
@@ -870,8 +902,7 @@ UString CPanel::GetDriveOrNetworkPrefix() const
 
 void CPanel::SetListViewMode(UInt32 index)
 {
-  if (index >= 4)
-    return;
+  index = kListMode_Report;
   _listViewMode = index;
   const LONG_PTR oldStyle = _listView.GetStyle();
   const DWORD newStyle = kStyles[index];

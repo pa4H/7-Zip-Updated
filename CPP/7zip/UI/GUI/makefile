@@ -1,3 +1,4 @@
+# Modified for the public 7-Zip fork on 2026-10-27.
 PROG = 7zG.exe
 CFLAGS = $(CFLAGS) \
   -DZ7_LANG \
@@ -6,7 +7,7 @@ CFLAGS = $(CFLAGS) \
 !IFDEF UNDER_CE
 LIBS = $(LIBS) ceshell.lib Commctrl.lib
 !ELSE
-LIBS = $(LIBS) comctl32.lib htmlhelp.lib comdlg32.lib gdi32.lib
+LIBS = $(LIBS) comctl32.lib comdlg32.lib uuid.lib gdi32.lib
 CFLAGS = $(CFLAGS) -DZ7_DEVICE_FILE
 !ENDIF
 
