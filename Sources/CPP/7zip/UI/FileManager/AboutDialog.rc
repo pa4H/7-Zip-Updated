@@ -1,11 +1,10 @@
 // Modified for the public 7-Zip fork on 2026-10-27.
+// About text and artwork hyperlink updated on 2026-10-29.
 #include "AboutDialogRes.h"
 #include "../../GuiCommon.rc"
 
 #define xc 216
-#define yc 124
-
-#define y 93
+#define yc 148
 
 IDI_LOGO ICON "../../UI/FileManager/7zipLogo.ico"
 
@@ -20,6 +19,8 @@ CAPTION "About 7-Zip"
   PUSHBUTTON  "GitHub", IDB_ABOUT_GITHUB, m + 112, by, 104, bys
   ICON   IDI_LOGO, -1, m, m, 32, 32, SS_REALSIZEIMAGE
   LTEXT  "", IDT_ABOUT_VERSION, m, 54, xc, 8
-  LTEXT  "", IDT_ABOUT_DATE, m, 67, xc, 8
-  LTEXT  MY_COPYRIGHT, -1, m, 80, xc, 8
+  LTEXT  "Fork by pa4H (c) 2026", IDT_ABOUT_FORK, m, 67, xc, 8
+  LTEXT  "", IDT_ABOUT_DATE, m, 80, xc, 8
+  CONTROL "Icons on <a>GitHub</a>", IDT_ABOUT_ICONS, "SysLink", WS_TABSTOP, m, 93, xc, 12
+  LTEXT  "Copyright (c) 1999-2026 Igor Pavlov", IDT_ABOUT_COPYRIGHT, m, 110, xc, 8
 }

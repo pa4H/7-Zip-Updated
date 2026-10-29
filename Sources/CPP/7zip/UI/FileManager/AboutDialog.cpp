@@ -1,5 +1,5 @@
 // Modified for the public 7-Zip fork on 2026-10-27.
-// About caption updated on 2026-10-28.
+// About text and artwork hyperlink updated on 2026-10-29.
 // AboutDialog.cpp
 
 #include "StdAfx.h"
@@ -12,6 +12,7 @@
 #include "../Common/LoadCodecs.h"
 
 #include "AboutDialog.h"
+#include <CommCtrl.h>
 #include "PropertyNameRes.h"
 
 #include "HelpUtils.h"
@@ -21,6 +22,16 @@
 #define kHelpTopic "start.htm"
 
 extern CCodecs *g_CodecsObj;
+
+INT_PTR CAboutDialog::Create(HWND wndParent)
+{
+  INITCOMMONCONTROLSEX controls;
+  controls.dwSize = sizeof(controls);
+  controls.dwICC = ICC_LINK_CLASS;
+  if (!::InitCommonControlsEx(&controls))
+    return -1;
+  return CModalDialog::Create(IDD_ABOUT, wndParent);
+}
 
 bool CAboutDialog::OnInit()
 {
@@ -37,8 +48,9 @@ bool CAboutDialog::OnInit()
   #ifdef Z7_LANG
   LangSetWindowText(*this, IDD_ABOUT);
   #endif
-  SetItemText(IDT_ABOUT_VERSION, UString("7-Zip " Z7_FORK_VERSION " fork by pa4H (c) 2026"));
+  SetItemText(IDT_ABOUT_VERSION, UString("7-Zip Updated! " Z7_FORK_VERSION));
   SetItemText(IDT_ABOUT_DATE, UString("Based on 7-Zip " MY_VERSION));
+  SetItemText(IDT_ABOUT_ICONS, UString(L"Icons on <a href=\"" Z7_FORK_ICONS_URL L"\">GitHub</a>"));
   EnableItem(IDB_ABOUT_GITHUB, Z7_FORK_GITHUB_URL[0] != 0);
   
   NormalizePosition();
@@ -48,6 +60,17 @@ bool CAboutDialog::OnInit()
 void CAboutDialog::OnHelp()
 {
   ShowHelpWindow(kHelpTopic);
+}
+
+bool CAboutDialog::OnNotify(UINT controlID, LPNMHDR header)
+{
+  if (controlID == IDT_ABOUT_ICONS &&
+      (header->code == NM_CLICK || header->code == NM_RETURN))
+  {
+    ::ShellExecuteW(NULL, L"open", Z7_FORK_ICONS_URL, NULL, NULL, SW_SHOWNORMAL);
+    return true;
+  }
+  return CModalDialog::OnNotify(controlID, header);
 }
 
 bool CAboutDialog::OnButtonClicked(unsigned buttonID, HWND buttonHWND)

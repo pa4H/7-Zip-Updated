@@ -1,4 +1,5 @@
 // Modified for the public 7-Zip fork on 2026-10-27.
+// First-install context-menu defaults updated on 2026-10-29.
 // ZipRegistry.cpp
 
 #include "StdAfx.h"
@@ -12,7 +13,7 @@
 #include "../../../Windows/Registry.h"
 #include "../../../Windows/Synchronization.h"
 
-// #include "../Explorer/ContextMenuFlags.h"
+#include "../Explorer/ContextMenuFlags.h"
 #include "ZipRegistry.h"
 
 using namespace NWindows;
@@ -565,26 +566,17 @@ void CContextMenuInfo::Save() const
 
 void CContextMenuInfo::Load()
 {
-  Cascaded.Val = true;
+  Cascaded.Val = false;
   Cascaded.Def = false;
 
-  MenuIcons.Val = false;
+  MenuIcons.Val = true;
   MenuIcons.Def = false;
 
   ElimDup.Val = true;
   ElimDup.Def = false;
 
-  WriteZone = (UInt32)(Int32)-1;
-
-  /* we can disable email items by default,
-     because email code doesn't work in some systems */
-  Flags = (UInt32)(Int32)-1
-      /*
-      & ~NContextMenuFlags::kCompressEmail
-      & ~NContextMenuFlags::kCompressTo7zEmail
-      & ~NContextMenuFlags::kCompressToZipEmail
-      */
-      ;
+  WriteZone = 0;
+  Flags = NContextMenuFlags::kCompress;
   Flags_Def = false;
   
   CS_LOCK
@@ -593,11 +585,11 @@ void CContextMenuInfo::Load()
   if (OpenMainKey(key, kOptionsInfoKeyName) != ERROR_SUCCESS)
     return;
   
-  Key_Get_BoolPair_true(key, kCascadedMenu, Cascaded);
+  Key_Get_BoolPair(key, kCascadedMenu, Cascaded);
   Key_Get_BoolPair_true(key, kElimDup, ElimDup);
-  Key_Get_BoolPair(key, kMenuIcons, MenuIcons);
+  Key_Get_BoolPair_true(key, kMenuIcons, MenuIcons);
 
-  Key_Get_UInt32(key, kWriteZoneId, WriteZone);
+  key.GetValue_UInt32_IfOk(kWriteZoneId, WriteZone);
 
   Flags_Def = (key.GetValue_UInt32_IfOk(kContextMenu, Flags) == ERROR_SUCCESS);
 }

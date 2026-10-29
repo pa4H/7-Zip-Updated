@@ -2,9 +2,16 @@
 /.cache/
 /dist/
 /build/
-**/x64/
-**/x86/
-**/arm64/
-**/o/
+/Sources/.cache/
+/Sources/build/
+/Sources/dist/
+/Sources/CPP/**/x64/
+/Sources/CPP/**/x86/
+/Sources/CPP/**/arm64/
+/Sources/CPP/**/o/
+/Sources/C/Util/**/x64/
+/Sources/C/Util/**/x86/
+/Sources/C/Util/**/arm64/
+/Sources/C/Util/**/o/
 # Extracted Windows artwork is a local redrawing reference only.
-/assets/up-reference/
+/Sources/assets/up-reference/
